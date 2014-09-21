@@ -16,7 +16,10 @@ import re
 from docutils import nodes
 from sphinx.util.compat import Directive
 from docutils.parsers.rst import directives
+
 from sphinx.writers.html import HTMLTranslator
+from sphinx.writers.text import TextTranslator
+from sphinx import addnodes
 
 ####################################################################################################
 
@@ -26,6 +29,10 @@ role_regexp = re.compile(r'(?P<value>.+?)\s*\<(?P<name>.+)\>$')
 ####################################################################################################
 
 class ItemScope(nodes.Element):
+
+    """ This class defines an ItemScope node. """
+
+    ##############################################
 
     def __init__(self, tagname, itemtype, itemprop=None, compact=False):
 
@@ -44,11 +51,25 @@ class ItemScope(nodes.Element):
 ####################################################################################################
 
 class ItemProp(nodes.Inline, nodes.TextElement):
+    """ This class defines an ItemProp node. """
     pass
 
 ####################################################################################################
 
 class ItemScopeDirective(Directive):
+
+    """ This class defines a ``itemscope`` directive.
+
+    .. code-block:: ReST
+
+        .. itemscope:: <Schema type>
+            :tag: element type (default: div)
+            :itemprop: optionnal itemprop attribute
+            :compact: optionnal
+
+            Nested content
+
+    """
 
     required_arguments = 1
     has_content = True
@@ -78,6 +99,15 @@ class ItemScopeDirective(Directive):
 
 def itemprop_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
 
+    """ This class defines a ``itemprop`` role.
+
+    .. code-block:: ReST
+
+        :itemprop:`Displayed text <itemprop name>`
+        :itemprop:`Displayed text <itemprop name:http://some.url/>`
+
+    """
+
     # print 'microdata.itemprop_role'
 
     match = role_regexp.match(text)
@@ -95,22 +125,21 @@ def itemprop_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
 
 ####################################################################################################
 
-def visit_ItemScope(self, node):
-    # print 'microdata.visit_ItemScope'
+def visit_ItemScope_html(self, node):
+    # print 'microdata.visit_ItemScope_html'
     self.body.append(node.starttag())
 
 ####################################################################################################
 
-def depart_ItemScope(self, node):
-    # print 'microdata.depart_ItemScope'
+def depart_ItemScope_html(self, node):
+    # print 'microdata.depart_ItemScope_html'
     self.body.append(node.endtag())
 
 ####################################################################################################
 
-def visit_ItemProp(self, node):
+def visit_ItemProp_html(self, node):
 
-    # print 'microdata.visit_ItemProp'
-
+    # print 'microdata.visit_ItemProp_html'
     if node['href']:
         self.body.append(self.starttag(node, 'a', '', itemprop=node['name'], href=node['href']))
     else:
@@ -118,10 +147,9 @@ def visit_ItemProp(self, node):
 
 ####################################################################################################
 
-def depart_ItemProp(self, node):
+def depart_ItemProp_html(self, node):
 
-    # print 'microdata.depart_ItemProp'
-
+    # print 'microdata.depart_ItemProp_html'
     if node['href']:
         self.body.append('</a>')
     else:
@@ -129,9 +157,9 @@ def depart_ItemProp(self, node):
 
 ####################################################################################################
 
-def visit_paragraph(self, node):
+def visit_paragraph_html(self, node):
 
-    # print 'microdata.visit_paragraph'
+    # print 'microdata.visit_paragraph_html'
 
     # docutils code was:
     #   if self.should_be_compact_paragraph(node):
@@ -149,15 +177,49 @@ def visit_paragraph(self, node):
 
 ####################################################################################################
 
+def visit_ItemScope_text(self, node):
+    # print 'microdata.visit_ItemScope_text'
+    pass
+
+####################################################################################################
+
+def depart_ItemScope_text(self, node):
+    # print 'microdata.depart_ItemScope_text'
+    pass
+
+####################################################################################################
+
+def visit_ItemProp_text(self, node):
+    # print 'microdata.visit_ItemProp_text'
+    pass
+
+####################################################################################################
+
+def depart_ItemProp_text(self, node):
+    # print 'microdata.depart_ItemProp_text'
+    pass
+
+####################################################################################################
+
+def visit_paragraph_text(self, node):
+
+    if (not isinstance(node.parent, nodes.Admonition)
+        or isinstance(node.parent, addnodes.seealso)):
+        self.new_state(0)
+
+####################################################################################################
+
 def setup(app):
 
     # print 'Load microdata'
     
     app.add_node(ItemScope,
-                 html=(visit_ItemScope, depart_ItemScope),
+                 html=(visit_ItemScope_html, depart_ItemScope_html),
+                 text=(visit_ItemScope_text, depart_ItemScope_text),
                  )
     app.add_node(ItemProp,
-                 html=(visit_ItemProp, depart_ItemProp),
+                 html=(visit_ItemProp_html, depart_ItemProp_html),
+                 text=(visit_ItemProp_text, depart_ItemProp_text),
                  )
 
     app.add_directive('itemscope', ItemScopeDirective)
@@ -165,7 +227,8 @@ def setup(app):
 
     # handle compact parameter
     # TODO: find a cleaner way to handle this case
-    HTMLTranslator.visit_paragraph = visit_paragraph
+    HTMLTranslator.visit_paragraph = visit_paragraph_html
+    # TextTranslator.visit_paragraph = visit_paragraph_text
 
 ####################################################################################################
 # 

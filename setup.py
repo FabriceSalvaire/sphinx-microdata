@@ -2,12 +2,6 @@
 
 from setuptools import setup, find_packages
 
-long_desc = '''
-This package contains the microdata Sphinx extension.
-
-It provides Microdata semantic markups.
-'''
-
 requires = ['Sphinx>=0.6']
 
 setup(
@@ -19,7 +13,7 @@ setup(
     author='Fabrice Salvaire',
     author_email='fabrice.salvaire@orange.fr',
     description='Sphinx "microdata" extension',
-    long_description=long_desc,
+    long_description=open('README.rst').read(),
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',

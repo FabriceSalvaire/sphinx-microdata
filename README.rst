@@ -6,6 +6,8 @@
 
 This plugin is derived from `pelican-microdata`_.
 
+Written by `Fabrice Salvaire <http://fabrice-salvaire.pagesperso-orange.fr>`_.
+
 Installation
 ------------
 
@@ -17,6 +19,14 @@ To install the plugin, you have to run these commands:
 
     python setup.py build
     python setup.py install
+
+The PySpice source code is hosted at https://github.com/FabriceSalvaire/sphinx-microdata
+
+To clone the Git repository, run this command in a terminal:
+
+.. code-block:: sh
+
+  git clone git@github.com:FabriceSalvaire/sphinx-microdata
 
 Usage
 -----
